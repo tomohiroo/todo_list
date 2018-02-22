@@ -7,7 +7,7 @@ class TodoList extends Component {
   constructor(props){
     super(props)
     this.state = {
-      todos: [s],
+      todos: [],
       nextId: 0
     }
   }
