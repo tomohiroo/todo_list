@@ -13,13 +13,14 @@ class TodoList extends Component {
   }
 
   addTodo(text, done){
-    const todo = {text: text, done: done, id: this.state.nextId}
-    const todos = this.state.todos.concat(todo)
-    let n = this.state.nextId
-    n++
-    this.setState({todos: todos, nextId: n})
+    this.setState((state) => {
+      return({
+        todos: [...state.todos, {text: text, done, done, id: state.nextId}],
+        nextId: state.nextId + 1
+      })
+    })
   }
-  iDo(id){
+  did(id){
     let todos = this.state.todos
     todos.forEach((todo, index) => {
       if(todo.id === id){
@@ -45,38 +46,31 @@ class TodoList extends Component {
           alldone = false
       }
     })
-    newTodos.forEach((todo) => {
-      todo.done = !alldone
-    })
-    this.setState({
-      todos: newTodos
+    this.setState((state) => {
+      return {
+        todos: state.todos.map((element) => {
+          element.done = !alldone
+          return element
+        })
+      }
     })
   }
   leftTodos(){
-    let count = 0;
-    this.state.todos.forEach((todo) => {
-      if(!todo.done){
-        count++
-      }
-    })
-    return count
+    return this.state.todos.filter((todo) => {return !todo.done}).length
   }
   clearComplited(){
     this.setState((state) => ({
-      todos: state.todos.filter((element) => element.done == false),
+      todos: state.todos.filter((element) => !element.done),
     }))
-    // this.setState((state) => ({
-    //   todos: state.todos.filter((element) => !element.done),
-    // }))
   }
   render() {
     return(
       <div>
         <h1>Todo List</h1>
         <TodoEntry add={(text, done) => this.addTodo(text, done)} allDone={() => this.allDone()} />
-        <Route exact path="/" component={() => <TodoListItems todos={this.state.todos} iDo={(id) => this.iDo(id)} delete={(id) => this.delete(id)} />}/>
-        <Route path="/active" component={() => <TodoListActiveItems todos={this.state.todos} iDo={(id) => this.iDo(id)} delete={(id) => this.delete(id)} />}/>
-        <Route path="/completed" component={() => <TodoListCompletedItems todos={this.state.todos} iDo={(id) => this.iDo(id)} delete={(id) => this.delete(id)} />}/>
+        <Route exact path="/" component={() => <TodoListItems todos={this.state.todos} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
+        <Route exact path="/active" component={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (!todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
+        <Route exact path="/completed" component={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
         <Footer number={this.leftTodos()} clearComplited={() => this.clearComplited()} />
       </div>
     )
@@ -112,44 +106,20 @@ const TodoListItems = (props) => {
   return(
     <div>
       {props.todos.map((todo, index) =>
-          <TodoListItem key={index} todo={todo} iDo={props.iDo} delete={props.delete} />
+          <TodoListItem key={index} todo={todo} did={props.did} delete={props.delete} />
       )}
     </div>
   )
 }
 const TodoListItem = (props) => {
-  // returnは一つの要素しかラップできない
     return(
       <div>
-        <input type="button" onClick={() => props.iDo(props.todo.id)} value="○" />
+        <input type="button" onClick={() => props.did(props.todo.id)} value="○" />
         {props.todo.done ? <span style={{textDecoration: "line-through"}}>{props.todo.text}</span> : <span>{props.todo.text}</span>}
         <input type="button" onClick={() => props.delete(props.todo.id)} value="×" />
       </div>
     )
 }
-
-const TodoListActiveItems = (props) => {
-  const todos = props.todos.filter((element) => !element.done)
-  return(
-    <div>
-      {todos.map((todo, index) =>
-          <TodoListItem key={index} todo={todo} iDo={props.iDo} delete={props.delete} />
-      )}
-    </div>
-  )
-}
-
-const TodoListCompletedItems = (props) => {
-  const todos = props.todos.filter((element) => element.done)
-  return(
-    <div>
-      {todos.map((todo, index) =>
-          <TodoListItem key={index} todo={todo} iDo={props.iDo} delete={props.delete} />
-      )}
-    </div>
-  )
-}
-
 
 const Footer = (props) => {
     return (
