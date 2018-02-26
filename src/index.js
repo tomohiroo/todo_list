@@ -2,7 +2,6 @@ import React, {Component} from "react"
 import ReactDOM from "react-dom"
 import {BrowserRouter, Route,Redirect, Link} from 'react-router-dom'
 
-// test
 class TodoList extends Component {
   constructor(props){
     super(props)
@@ -40,7 +39,6 @@ class TodoList extends Component {
   allDone(){
     let newTodos = this.state.todos
     let alldone = true
-    // forEachのbreakはできない
     newTodos.forEach((todo) => {
       if (!todo.done){
           alldone = false
