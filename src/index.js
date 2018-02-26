@@ -7,15 +7,17 @@ class TodoList extends Component {
     super(props)
     this.state = {
       todos: [],
-      nextId: 0
+      nextId: 0,
+      value: ""
     }
   }
 
-  addTodo(text, done){
+  addTodo(text){
     this.setState((state) => {
       return({
-        todos: [...state.todos, {text: text, done, done, id: state.nextId}],
-        nextId: state.nextId + 1
+        todos: [...state.todos, {text: text, done: false, id: state.nextId}],
+        nextId: state.nextId + 1,
+        value: ""
       })
     })
   }
@@ -61,11 +63,16 @@ class TodoList extends Component {
       todos: state.todos.filter((element) => !element.done),
     }))
   }
+  handleChange(event){
+    this.setState({
+      value: event.target.value
+    })
+  }
   render() {
     return(
       <div>
         <h1>Todo List</h1>
-        <TodoEntry add={(text, done) => this.addTodo(text, done)} allDone={() => this.allDone()} />
+        <TodoEntry add={(text) => this.addTodo(text)} allDone={() => this.allDone()} value={this.state.value} onChangeText={(event) => this.handleChange(event)}/>
         <Route exact path="/" component={() => <TodoListItems todos={this.state.todos} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
         <Route exact path="/active" component={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (!todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
         <Route exact path="/completed" component={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
@@ -75,29 +82,14 @@ class TodoList extends Component {
   }
 }
 
-class TodoEntry extends Component{
-  constructor(props){
-    super(props)
-    this.state = {
-      text: '', done: false
-    }
-  }
-  onChangeText(event){
-    this.setState({text: event.target.value})
-  }
-  onClickSubmit(){
-    this.props.add(this.state.text, this.state.done)
-    this.setState({text: '', done: false})
-  }
-  render(){
-    return(
-      <div>
-        <input type="button" value="all done" onClick={() => this.props.allDone()} />
-        <input type="text" value={this.state.text} placeholder="What needs to be done?" onChange={(event) => this.onChangeText(event)} style={{width: "60%"}} />
-        <input type="submit" value="add" onClick={() => this.onClickSubmit()} />
-      </div>
-    )
-  }
+const TodoEntry = (props) => {
+  return(
+    <div>
+      <input type="button" value="all done" onClick={() => props.allDone()} />
+      <input type="text" value={props.value} placeholder="What needs to be done?" onChange={(event) => props.onChangeText(event)} style={{width: "60%"}} />
+      <input type="submit" value="add" onClick={() => props.add(props.value)} />
+    </div>
+  )
 }
 
 const TodoListItems = (props) => {
