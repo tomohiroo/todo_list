@@ -7,12 +7,41 @@ class TodoList extends Component {
     super(props)
     this.state = {
       todos: [],
-      nextId: 0,
+      nextId: 1,
       value: ""
     }
+    this.setInitialTodos();
+  }
+
+  setInitialTodos(){
+    fetch('http://localhost:3000/todos')
+    .then((response) => {
+      return response.json()
+    })
+    .then((json) => {
+      json.forEach((t) => {
+        this.setState((state) => {
+          return({
+            todos: [...state.todos, {text: t.text, done: t.done, id: t.id}]
+          })
+        })
+      })
+      this.setState({
+        nextId: json[json.length - 1].id + 1
+      })
+    })
   }
 
   addTodo(text){
+    fetch('http://localhost:3000/todos',{
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        id: this.state.nextId, text: text, done: false
+      })
+    })
     this.setState((state) => {
       return({
         todos: [...state.todos, {text: text, done: false, id: state.nextId}],
@@ -26,6 +55,15 @@ class TodoList extends Component {
     todos.forEach((todo, index) => {
       if(todo.id === id){
         todos[index].done = !todos[index].done
+        fetch(`http://localhost:3000/todos/${id}`,{
+          headers: {
+            "Content-Type": "application/json"
+          },
+          method: 'PUT',
+          body: JSON.stringify({
+            id: id, text: todos[index].text, done: todos[index].done
+          })
+        })
       }
     })
     this.setState({
@@ -34,17 +72,29 @@ class TodoList extends Component {
   }
   delete(id){
     this.setState((state) => ({
-      //filter: trueになるやつだけ取り出す
       todos: state.todos.filter((element) => element.id !== id),
     }))
+    fetch(`http://localhost:3000/todos/${id}`,{
+      method: 'DELETE',
+    })
   }
   allDone(){
-    let newTodos = this.state.todos
     let alldone = true
-    newTodos.forEach((todo) => {
+    this.state.todos.forEach((todo) => {
       if (!todo.done){
           alldone = false
       }
+    })
+    this.state.todos.forEach((todo) => {
+      fetch(`http://localhost:3000/todos/${todo.id}`,{
+        headers: {
+          "Content-Type": "application/json"
+        },
+        method: 'PUT',
+        body: JSON.stringify({
+          id: todo.id, text: todo.text, done: !alldone
+        })
+      })
     })
     this.setState((state) => {
       return {
@@ -54,14 +104,17 @@ class TodoList extends Component {
         })
       }
     })
+
   }
   leftTodos(){
     return this.state.todos.filter((todo) => {return !todo.done}).length
   }
   clearComplited(){
-    this.setState((state) => ({
-      todos: state.todos.filter((element) => !element.done),
-    }))
+    this.state.todos.forEach((todo) => {
+      if(todo.done){
+        this.delete(todo.id)
+      }
+    })
   }
   handleChange(event){
     this.setState({
