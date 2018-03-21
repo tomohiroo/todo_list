@@ -1,0 +1,9 @@
+{
+  "todos": [
+    {
+      "text" :"ajaxについて勉強する",
+      "id": 1,
+      "done": false
+    }
+  ]
+}
