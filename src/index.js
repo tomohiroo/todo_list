@@ -121,14 +121,17 @@ class TodoList extends Component {
       value: event.target.value
     })
   }
+  textEdit(event){
+    //todoをいじるコード
+  }
   render() {
     return(
       <div>
         <h1>Todo List</h1>
         <TodoEntry add={(text) => this.addTodo(text)} allDone={() => this.allDone()} value={this.state.value} onChangeText={(event) => this.handleChange(event)}/>
-        <Route exact path="/" component={() => <TodoListItems todos={this.state.todos} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
-        <Route exact path="/active" component={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (!todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
-        <Route exact path="/completed" component={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} />}/>
+        <Route exact path="/" render={() => <TodoListItems todos={this.state.todos} did={(id) => this.did(id)} delete={(id) => this.delete(id)} edit={(event) => this.textEdit(event)} />}/>
+        <Route exact path="/active" render={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (!todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} edit={(event) => this.textEdit(event)} />}/>
+        <Route exact path="/completed" render={() => <TodoListItems todos={this.state.todos.filter((todo) => {return (todo.done)})} did={(id) => this.did(id)} delete={(id) => this.delete(id)} edit={(event) => this.textEdit(event)} />}/>
         <Footer number={this.leftTodos()} clearComplited={() => this.clearComplited()} />
       </div>
     )
@@ -149,7 +152,7 @@ const TodoListItems = (props) => {
   return(
     <div>
       {props.todos.map((todo, index) =>
-          <TodoListItem key={index} todo={todo} did={props.did} delete={props.delete} />
+          <TodoListItem key={index} todo={todo} did={props.did} delete={props.delete} edit={props.edit} />
       )}
     </div>
   )
@@ -158,7 +161,7 @@ const TodoListItem = (props) => {
     return(
       <div>
         <input type="button" onClick={() => props.did(props.todo.id)} value="○" />
-        {props.todo.done ? <span style={{textDecoration: "line-through"}}>{props.todo.text}</span> : <span>{props.todo.text}</span>}
+        {props.todo.done ? <span style={{textDecoration: "line-through"}} onClick={event => props.edit(event)}>{props.todo.text}</span> : <span onClick={event => props.edit(event)}>{props.todo.text}</span>}
         <input type="button" onClick={() => props.delete(props.todo.id)} value="×" />
       </div>
     )
